@@ -47,10 +47,10 @@ Use at your own responsibility.
 
 ## Contributing
 
-Contributions are welcome. Please open an issue to discuss changes before submitting a pull request.
+Contributions are welcome. Please open an issue to discuss changes or submit a pull request.
 
 ---
 
 ## License
 
-[GPL-2.0-or-later](./LICENSE) - original work copyright SUSE LLC.
+[GPL-2.0-or-later](./LICENSE) - original work copyright SUSE LLC under the same license.
