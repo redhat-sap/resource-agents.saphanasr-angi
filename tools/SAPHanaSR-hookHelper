@@ -9,7 +9,7 @@
 # Helper script for HA/DR hooks
 # currently implemented use case are 'checkTakeover' and 'fenceMe'
 
-# We check the maintenance mode of the multi-state resource (as described in the official supported maintenance procedure in man page SAPHanaSR_maitenance_examples(7) - EXAMPLES: * Perform an SAP HANA take-over by using SAP tools) and additionally the cluster-wide maintenance mode.
+# We check the maintenance mode of the multi-state resource and additionally the cluster-wide maintenance mode.
 
 # Definition of the exit codes returned to the hook scripts:
 # for the current use case 'checkTakeover' it translate to
