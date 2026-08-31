@@ -1,5 +1,0 @@
-#
-# the following direct ssh calls still needs to be replaced in the sct_test_????* files
-#
-sct_test_create_cluster_config:    ssh -T "${node01}" <<EOF
-sct_test_delete_cluster_config:ssh -T "${node01}" <<EOF

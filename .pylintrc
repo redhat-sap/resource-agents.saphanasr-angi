@@ -8,3 +8,6 @@ max-line-length=240
 # Maximum number of nested blocks for function / method body
 max-nested-blocks=8
 max-branches=20
+
+[MESSAGES CONTROL]
+disable=too-many-statements

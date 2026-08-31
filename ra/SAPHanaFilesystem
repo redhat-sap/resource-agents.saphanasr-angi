@@ -31,11 +31,11 @@ OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 # shellcheck source=./ra/saphana-common-lib
-source /usr/lib/SAPHanaSR-angi/saphana-common-lib
+source /usr/lib/sap-hana-ha/saphana-common-lib
 # shellcheck source=./ra/saphana-controller-common-lib
-source /usr/lib/SAPHanaSR-angi/saphana-controller-common-lib
+source /usr/lib/sap-hana-ha/saphana-controller-common-lib
 # shellcheck source=./ra/saphana-filesystem-lib
-source /usr/lib/SAPHanaSR-angi/saphana-filesystem-lib
+source /usr/lib/sap-hana-ha/saphana-filesystem-lib
 
 #
 #######################################################################

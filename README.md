@@ -1,70 +1,56 @@
-# <div align="center"> SAPHanaSR-angi - SAP HANA System Replication <br> A Next Generation Interface </div>
+# resource-agents.saphanasr-angi
 
-The SUSE resource agents to control the SAP HANA database in system replication setups
+[![Shellcheck](https://github.com/redhat-sap/resource-agents.saphanasr-angi/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/redhat-sap/resource-agents.saphanasr-angi/actions/workflows/shellcheck.yml)
+[![Pylint](https://github.com/redhat-sap/resource-agents.saphanasr-angi/actions/workflows/pylint.yml/badge.svg)](https://github.com/redhat-sap/resource-agents.saphanasr-angi/actions/workflows/pylint.yml)
+[![Mandoc](https://github.com/redhat-sap/resource-agents.saphanasr-angi/actions/workflows/mandoc.yml/badge.svg)](https://github.com/redhat-sap/resource-agents.saphanasr-angi/actions/workflows/mandoc.yml)
 
-[![Build Status](https://github.com/SUSE/SAPHanaSR/actions/workflows/ChecksAndLinters.yml/badge.svg)](https://github.com/SUSE/SAPHanaSR/actions/workflows/ChecksAndLinters.yml/badge.svg)
+Red Hat maintained fork of the SAP HANA System Replication Pacemaker resource agents and hook scripts - angi generation, covering scale-up and scale-out topologies. Packaging source for the `sap-hana-ha` RPM.
 
+Forked from [SUSE/SAPHanaSR](https://github.com/SUSE/SAPHanaSR) (`main` branch) on 2026-07-23 under GPL-2.0-or-later. Independently maintained since.
 
-## Introduction
+---
 
-SAPHanaSR-angi is "SAP HANA SR - An Next Generation Interface" for SUSE high availabilty clusters to manage SAP HANA databases with system replication.
-It provides an automatic failover between SAP HANA nodes with configured System Replication in HANA. The current version of SAPHanaSR-angi is targeting SAP HANA SR scale-up and scale-out setups.
+## Repository layout
 
-CIB attributes are not backward compatible between SAPHanaSR-angi and the classic SAPHanaSR. Nevertheless, SAPHanaSR and SAPHanaSR-ScaleOut can be upgraded to SAPHanaSR-angi by following the documented procedure.
+```
+ra/             OCF resource agents and shared libraries
+hooks/          HA/DR provider hooks (configured in SAP HANA global.ini)
+hooks/samples/  global.ini configuration examples for each hook
+alerts/         Pacemaker alert agents
+tools/          Cluster monitoring and management utilities
+man/            Manual pages
+```
 
-This technology is included in the SUSE Linux Enterprise Server for SAP Applications 15, via the RPM package with the same name.
+---
 
-System replication will help to replicate the database data from one node to another node in order to compensate for database failures. With this mode of operation, internal SAP HANA high-availability (HA) mechanisms and the Linux cluster have to work together.
+## How to use this repository
 
-The SAPHanaController resource agent performs the actual check of the SAP HANA database instances and is configured as a promotable multi-state resource.
-Managing the two SAP HANA instances means that the resource agent controls the start/stop of the instances. In addition the resource agent is able to monitor the SAP HANA databases on landscape host configuration level.
+This repository is a **packaging source**, not a deployable package. It does not provide RPM spec files or installation scripts. Packaging decisions (which files to ship, installation paths, package dependencies) are made at the packaging layer.
 
-For this monitoring the resource agent relies on interfaces provided by SAP.
+---
 
-As long as the HANA landscape status is not "ERROR" the Linux cluster will not act. The main purpose of the Linux cluster is to handle the takeover to the other site.
+## Differences from the fork origin
 
-Only if the HANA landscape status indicates that HANA can not recover from the failure and the replication is in sync, then Linux will act.
+Changes since forking are tracked in [`CHANGELOG.md`](CHANGELOG.md).
 
-An important task of the resource agent is to check the synchronisation status of the two SAP HANA databases. If the synchronisation is not "SOK", then the
-cluster avoids to take over to the secondary side, if the primary fails. This is to improve the data consistency.
+---
 
-For more information, refer to the ["Supported High Availability Solutions by SLES for SAP Applications"](https://documentation.suse.com/sles-sap/sap-ha-support/html/sap-ha-support/article-sap-ha-support.html) and all the manual pages shipped with the package.
+## Disclaimer
 
-For SAP HANA Databases in System Replication only the listed scenarios at ["Supported High Availability Solutions by SLES for SAP Applications"](https://documentation.suse.com/sles-sap/sap-ha-support/html/sap-ha-support/article-sap-ha-support.html) are supported. For any scenario not matching the scenarios named or referenced in our setup guides please contact SUSE services.
+This repository is a fork of [SUSE/SAPHanaSR](https://github.com/SUSE/SAPHanaSR) maintained for RHEL packaging purposes. It does not replace official SAP documentation for SAP HANA System Replication HA cluster setup and operation.
 
-The following SUSE blog series gives a good overview about running SAP HANA in System Replication in the SUSE cluster:
-["towardszerodowntime"](https://www.suse.com/c/tag/towardszerodowntime/)
+**Testing coverage:** Static analysis (shellcheck, pylint, mandoc) is applied via CI on every commit. Functional HA testing - cluster behaviour, fencing, takeover sequences - is the responsibility of the distribution packaging and validation process.
 
-## File structure of installed package
+Use at your own responsibility.
 
-- `/usr/share/SAPHanaSR-angi/doc` contains readme and license;
-- `/usr/share/man` and it's subdirectories contains manual pages;
-- `/usr/lib/ocf/resource.d/suse` contains the actual resource agents, `SAPHanaController` and `SAPHanaTopology`;
-- `/usr/lib/SAPHanaSR-angi` contains the libraries for the resource agents;
-- `/usr/share/SAPHanaSR-angi` contains SAP HA/DR provider hook scripts;
-- `/usr/share/SAPHanaSR-angi/samples` contains examples for global ini configuration and various additional stuff;
-- `/usr/bin` contains tools;
-
-
-## License
-
-See the [LICENSE](LICENSE) file for license rights and limitations.
-
+---
 
 ## Contributing
 
-If you are interested in contributing to this project, read the [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+Contributions are welcome. Please open an issue to discuss changes or submit a pull request.
 
+---
 
-## Feedback
-Do you have suggestions for improvement? Let us know!
+## License
 
-Go to Issues, create a [new issue](https://github.com/SUSE/SAPHanaSR/issues) and describe what you think could be improved.
-
-Feedback is always welcome!
-
-
-## Development and Branches
-Please read [development.md](development.md) for more information.
-
-
+[GPL-2.0-or-later](./LICENSE) - original work copyright SUSE LLC under the same license.

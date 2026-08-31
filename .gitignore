@@ -1,7 +1,3 @@
 *.tgz
 *.tar.gz
-osc
-ibs
-test.log
-misc
-tmp
+__pycache__

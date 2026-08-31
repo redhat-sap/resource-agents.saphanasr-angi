@@ -2,22 +2,22 @@
 #
 # SAPHanaSR-hookHelper
 #
-# (c) 2022-2026 SUSE LLC
-# GNU General Public License (GPL)
-# http://www.gnu.org/licenses/gpl.html
+# License:      GNU General Public License (GPL)
+# Copyright:    (c) 2022-2026 SUSE LLC
+# Copyright:    (c) 2025-2026 Red Hat, Inc.
 #
 # Helper script for HA/DR hooks
 # currently implemented use case are 'checkTakeover' and 'fenceMe'
 
-# For now we only check the maintenance mode of the multi-state ressource (as descibed in the official supported maintenance procedure described in man page SAPHanaSR_maitenance_examples(7) - EXAMPLES: * Perform an SAP HANA take-over by using SAP tools.
+# We check the maintenance mode of the multi-state resource and additionally the cluster-wide maintenance mode.
 
 # Definition of the exit codes returned to the hook scripts:
 # for the current use case 'checkTakeover' it translate to
 #  0 - OK
 #    - takeover requested by cluster, permit takeover
 #  4 - block takeover (sr_takeover attribute not found or not set to 'T' and
-#      multi-state ressource is NOT in maintenance)
-#  5 - multi-state resource in maintenance, permit takeover
+#      multi-state ressource and cluster are NOT in maintenance)
+#  5 - multi-state resource or cluster in maintenance, permit takeover
 #  6 - cluster not available, permit takeover
 #  7 - given SID not configured in the cluster, permit takeover
 # 99 - unknown cluster command error, permit takeover
@@ -89,11 +89,20 @@ sid_is_in_cluster() {
     fi
 }
 
+# check, if the whole cluster is in maintenance mode
+chk_cluster_maintenance() {
+    cmaint=$(xmllint -xpath "string(//crm_config/cluster_property_set/nvpair[@name='maintenance-mode']/@value)" "$cibtmp")
+    if [ -z "$cmaint" ]; then
+        cmaint="false"
+    fi
+    echo "$cmaint"
+}
+
 # check, if the multi-state resource is in maintenance
 chk_msres_maintenance() {
     mmaint="false"
-    # get promotable clone resource name (select first promotable=true clone, then by provider=SUSE and SID)
-    rnameNew=$(xmllint -xpath "string(//clone/meta_attributes/nvpair[@name='promotable' and @value='true']/../../primitive[@class='ocf' and @provider='suse']/instance_attributes/nvpair[@name='SID' and @value='$RSID']/../../../@id)" "$cibtmp")
+    # get promotable clone resource name (select by type=SAPHanaController and SID)
+    rnameNew=$(xmllint -xpath "string(//clone/primitive[@class='ocf' and @type='SAPHanaController']/instance_attributes/nvpair[@name='SID' and @value='$RSID']/../../../@id)" "$cibtmp")
     if [ -n "$rnameNew" ]; then
         # check for maintenance
         mmaint=$(xmllint -xpath "string(//clone[@id='$rnameNew']/meta_attributes/nvpair[@name='maintenance']/@value)" "$cibtmp")
@@ -232,15 +241,16 @@ case "$USECASE" in
             chk_takeover_attr; rc=$?
             if [ "$rc" == 4 ]; then
                 # sr_takeover attribute not found or not set to 'T'
-	        # check, if multi-state ressource is in maintenance
-                maint=$(chk_msres_maintenance)
-                if [ "$maint" == "true" ]; then
-                    # permit sr_takeover, because multi-state ressource is
-                    # in maintenance
-	            rc=5
+                # check, if multi-state resource or cluster is in maintenance
+                msres_maint=$(chk_msres_maintenance)
+                cluster_maint=$(chk_cluster_maintenance)
+                if [ "$msres_maint" == "true" ] || [ "$cluster_maint" == "true" ]; then
+                    # permit sr_takeover, because multi-state resource or cluster
+                    # is in maintenance
+                    rc=5
                 else
                     # block takeover, because sr_takeover attribute not found or not
-                    # set to 'T' and multi-state ressource is NOT in maintenance
+                    # set to 'T' and multi-state ressource and cluster are NOT in maintenance
                     rc=4
                 fi
             fi
@@ -252,15 +262,16 @@ case "$USECASE" in
     ;;
 "fenceMe" )
      nodeName=$(/usr/sbin/crm_node -n)
-     #stonith_admin --reboot="$nodeName"
      # only 'activate' the /root/SAPHanaSR-hookHelper.log logging, if really needed for debugging
      #echo "$(date) SAPHanaSR-hookHelper fenceMe" >> /root/SAPHanaSR-hookHelper.log
-     su - "${ASID}adm" -c "HDB kill-9" 
+     su - "${ASID}adm" -c "HDB kill-9"
      #echo "$(date) SAPHanaSR-hookHelper fenceMe - killed, now fence" >> /root/SAPHanaSR-hookHelper.log
-     # alternative option
-     /usr/sbin/crm_attribute -t status -n terminate -v true -N "$nodeName" 
-     # /usr/sbin/crm --force node fence "$nodeName"
-     rc=42 # if fence is working this rc should never been send back
+     /usr/sbin/crm_attribute -t status -N "${nodeName}" -n terminate -v true
+     # Sleep until fencing takes us down or someone removes the 'terminate' attribute.
+     while [ "$(/usr/sbin/crm_attribute -t status -N "${nodeName}" -n terminate -G -d false -q)" == "true" ]; do
+         sleep 10
+     done
+     rc=42
      ;;
 "echoBe" )
      echo "b" > /proc/sysrq-trigger

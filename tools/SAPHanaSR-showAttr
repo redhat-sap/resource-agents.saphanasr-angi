@@ -24,7 +24,7 @@ import re
 import sys
 import datetime
 from dateutil import parser as dateutil_parser
-sys.path.insert(1, '/usr/lib/SAPHanaSR-angi')
+sys.path.insert(1, '/usr/lib/sap-hana-ha')
 from saphana_sr_tools import HanaCluster,HanaStatus
 # pylint: enable=wrong-import-position
 # pylint: enable=unused-import
